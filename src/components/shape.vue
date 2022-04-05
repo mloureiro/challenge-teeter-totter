@@ -1,5 +1,5 @@
 <template>
-	<div class="shape" :class="classList">{{ weight }}</div>
+	<div class="shape __wrapper" :class="classList">{{ weight }}</div>
 </template>
 
 <script>
@@ -43,23 +43,25 @@ export default {
 
 <style scoped lang="scss">
 .shape {
-	--shape-size: var(--size-m);
-	--shape-color: var(--color-rich-black);
-	--shape-background: var(--color-gains-boro);
+	&.__wrapper {
+		--shape-size: var(--size-m);
+		--shape-color: var(--color-rich-black);
+		--shape-background: var(--color-gains-boro);
 
-	width: calc(var(--shape-size) * 3);
-	height: calc(var(--shape-size) * 3);
-	display: flex;
-	justify-content: center;
-	align-items: center;
+		width: calc(var(--shape-size) * 3);
+		height: calc(var(--shape-size) * 3);
+		display: flex;
+		justify-content: center;
+		align-items: center;
 
-	font-size: calc(var(--shape-size) * 2);
-	font-weight: var(--font-weight-heavy);
+		font-size: calc(var(--shape-size) * 2);
+		font-weight: var(--font-weight-heavy);
 
-	color: var(--shape-color);
-	border: 1px solid var(--shape-color);
-	background-color: var(--shape-background);
-	opacity: 0.8;
+		color: var(--shape-color);
+		border: 1px solid var(--shape-color);
+		background-color: var(--shape-background);
+		opacity: 0.8;
+	}
 
 	&.--square {}
 	&.--circle { border-radius: 100%; }
