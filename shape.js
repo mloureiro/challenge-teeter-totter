@@ -1,4 +1,10 @@
-import { isBetween, itemOrRandom, randomItem, range} from "./utils.js";
+import {
+	isBetween,
+	itemOrRandom,
+	prefixCallback,
+	randomItem,
+	range,
+} from "./utils.js";
 
 /**
  * Shape definitions
@@ -21,6 +27,22 @@ const SHAPE_CONFIGURATION = Object.freeze({
 	sizes: ['xs', 's', 'm', 'l', 'xl'],
 	variants: range(1, 12),
 });
+
+/**
+ * Generate class for the specific configurations
+ *
+ * @typedef {function(string | number): string} Prefixer
+ *
+ * @type {Object}
+ * @property {Prefixer} type
+ * @property {Prefixer} size
+ * @property {Prefixer} variant
+ */
+const generateClass = {
+	type: prefixCallback('--'),
+	size: prefixCallback('--'),
+	variant: prefixCallback('--var'),
+};
 
 const [,SHAPE_MAX_WEIGHT] = SHAPE_CONFIGURATION.weightRange;
 
@@ -66,19 +88,21 @@ export const factoryShape = ({ createElement }) => ({ type, weight }) => {
 	const el = createElement();
 	el.classList.add(
 		'shape',
-		`--${itemOrRandom(type, SHAPE_CONFIGURATION.types)}`,
-		`--${calculateSize(state.weight)}`,
-		`--var${randomItem(SHAPE_CONFIGURATION.variants)}`,
+		generateClass.type(itemOrRandom(type, SHAPE_CONFIGURATION.types)),
+		generateClass.size(calculateSize(state.weight)),
+		generateClass.variant(randomItem(SHAPE_CONFIGURATION.variants)),
 	);
 	el.innerHTML = state.weight;
 
-	return {
+	return Object.freeze({
 		get el() { return el },
 		get weight() { return state.weight },
 		set weight(val) {
 			state.weight = val;
-			el.classList.remove(...SHAPE_CONFIGURATION.sizes,);
-			el.classList.add(`--${calculateSize(val)}`);
+
+			el.classList.remove(...SHAPE_CONFIGURATION.sizes.map(generateClass.size));
+			el.classList.add(generateClass.size(calculateSize(val)));
+			el.innerText = state.weight;
 		},
-	};
+	});
 }

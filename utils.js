@@ -31,3 +31,10 @@ export const itemOrRandom = (item, list) => item && list.includes(item) ? item :
  * @return {boolean}
  */
 export const isBetween = (n, [min, max]) => !Number.isNaN(n) && n >= min && n <= max;
+
+/**
+ * Creates a callback that prefixes strings
+ * @param   {string} prefix
+ * @returns {function(string | number): string}
+ */
+export const prefixCallback = prefix => str => `${prefix}${str}`;
