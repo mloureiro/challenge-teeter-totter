@@ -14,3 +14,5 @@ So to simplify, I decided to use some _modern_ features that are either not supp
 - [CSS variables](https://caniuse.com/css-env-function)
 
 Any relative modern browser (2018+) should be able to run the challenge. 
+
+2 + 1.5 * 1
