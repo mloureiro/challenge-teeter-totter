@@ -63,14 +63,12 @@ export default {
 		opacity: 0.8;
 	}
 
-	&.--square {}
+	&.--square { border-radius: var(--border-l); }
 	&.--circle { border-radius: 100%; }
 	&.--triangle {
 		width: 0;
 		height: 0;
-		border-top: solid transparent;
-		border-right: solid transparent;
-		border-left: solid transparent;
+		border: solid transparent;
 		border-bottom: solid var(--shape-background);
 		align-items: baseline;
 
