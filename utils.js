@@ -22,3 +22,12 @@ export const randomItem = list => list[Math.floor(Math.random() * list.length)];
  * @return   {I}
  */
 export const itemOrRandom = (item, list) => item && list.includes(item) ? item : randomItem(list);
+
+/**
+ * Check if number is within range
+ * @param  {number} n
+ * @param  {number} min
+ * @param  {number} max
+ * @return {boolean}
+ */
+export const isBetween = (n, [min, max]) => !Number.isNaN(n) && n >= min && n <= max;
