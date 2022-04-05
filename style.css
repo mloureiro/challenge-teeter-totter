@@ -1,0 +1,57 @@
+:root {
+	/* fonts */
+	--font-family-sans: 'Dosis', sans-serif;
+	--font-family-cursive: 'Pacifico', cursive;
+
+	--font-weight-regular: 400;
+	--font-weight-heavy: bold;
+
+	/* sizes */
+	--size-xxs: 0.125rem;  /*  2px */
+	--size-xs: 0.375rem;   /*  6px */
+	--size-s: 0.75rem;     /* 12px */
+	--size-m: 16px;        /* 16px base size */
+	--size-l: 1.25rem;     /* 20px */
+	--size-xl: 1.75rem;    /* 28px */
+	--size-xxl: 2.25rem;   /* 36px */
+
+	--space-xs: 0.125rem;  /*  2px */
+	--space-s: 0.25rem;    /*  4px */
+	--space-m: 0.5rem;     /*  8px */
+	--space-l: 1rem;       /*  16px */
+	--space-xl: 1.5rem;    /*  24px */
+
+	--border-xs: 1px;      /*   1px */
+	--border-s: 1px;       /*   1px */
+	--border-m: 0.125rem;  /*   2px */
+	--border-l: 0.25rem;   /*   4px */
+	--border-xl: 0.375rem; /*   6px */
+
+	/* all colors */
+	--color-rich-black: #071013;
+	--color-pacific-blue: #23b5d3;
+	--color-pewter-blue: #75abbc;
+	--color-cadet-crayola: #a2aebb;
+	--color-gains-boro: #dfe0e2;
+	--color-light-orange: #fcd7ad;
+	--color-royal-purple: #7b4b94;
+	--color-viridian-green: #0ca4a5;
+	--color-army-green: #433e0e;
+	--color-orange-pantone: #ff570a;
+	--color-sheen-gold: #c89933;
+	--color-english-violet: #4a314d;
+	--color-old-lavender: #6b6570;
+	--color-mint-cream: #ebf5ee;
+	--color-granny-apple: #ace894;
+
+	/* Base styles */
+	font-family: var(--font-family-sans);
+	font-size: var(--size-m);
+	font-weight: var(--font-weight-regular);
+	color: var(--color-rich-black);
+	background-color: var(--color-gains-boro) ;
+}
+
+* {
+	box-sizing: border-box;
+}
