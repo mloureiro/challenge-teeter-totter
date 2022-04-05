@@ -1,5 +1,5 @@
 import { createApp } from 'vue'
-import App from './app.vue'
+import Playground from './playground.vue'
 import './main.scss';
 
-createApp(App).mount('#app')
+createApp(Playground).mount('#app')
