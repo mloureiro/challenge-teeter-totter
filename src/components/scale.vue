@@ -6,11 +6,19 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue';
+import {
+	computed,
+	defineEmits,
+	onMounted,
+	onUnmounted,
+	ref,
+} from 'vue';
 import { isBetween } from "../utils";
 
+const emit = defineEmits(['board']);
+
 const props = defineProps({
-	deviation: {
+	bending: {
 		type: Number,
 		required: true,
 		validator: d => isBetween(d, [-100, 100]),
@@ -19,7 +27,7 @@ const props = defineProps({
 
 const board = ref(null);
 const maxRadAngle = ref(0);
-const currentRadAngle = computed(() => props.deviation * maxRadAngle.value / 100);
+const currentRadAngle = computed(() => props.bending * maxRadAngle.value / 100);
 const boardStyle = computed(() => ({
 	transform: `rotate(${currentRadAngle.value}rad)`,
 }))
@@ -30,11 +38,17 @@ const updateMaxBoardAngle = () => {
 		return;
 	}
 
-	const { top, height, width } = board.value.getBoundingClientRect();
+	const { top, right, bottom, left, height, width } = board.value.getBoundingClientRect();
 	const { height: parentHeight } = board.value.parentElement.getBoundingClientRect();
 
 	const heightFromGround = parentHeight - Math.round(top + (height / 2));
 	maxRadAngle.value = Math.tan(heightFromGround / (width / 2));
+
+	emit('board', {
+		start: [left, top],
+		end: [right, bottom],
+		radAngle: currentRadAngle.value,
+	});
 };
 
 onMounted(() => {
