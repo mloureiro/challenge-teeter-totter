@@ -92,10 +92,10 @@ const STATUS = {
      | 'pause'
      | 'play'
      | 'reset'
-   } Actions
- * @type {Object.<string, Actions>}
+   } Mutations
+ * @type {Object.<string, Mutations>}
  */
-export const ACTIONS = {
+export const MUTATIONS = {
 	addWeight: 'add-weight',
 	moveLeft: 'move-left',
 	moveRight: 'move-right',
@@ -235,10 +235,10 @@ export const store = createStore({
 		bending(state) { return 0; },
 	},
 	/**
-	 * @type {Object.<Actions, function(State): State>} mutations
+	 * @type {Object.<Mutations, function(State): State>} mutations
 	 */
 	mutations: {
-		[ACTIONS.addWeight]: state => {
+		[MUTATIONS.addWeight]: state => {
 			state.player = !state.player || state.player === PLAYERS.left
 				? PLAYERS.right
 				: PLAYERS.left;
@@ -248,15 +248,15 @@ export const store = createStore({
 				: state.list;
 			state.active = weight;
 		},
-		[ACTIONS.moveLeft]: state => moveActiveWeight(state, 'left'),
-		[ACTIONS.moveRight]: state => moveActiveWeight(state, 'right'),
+		[MUTATIONS.moveLeft]: state => moveActiveWeight(state, 'left'),
+		[MUTATIONS.moveRight]: state => moveActiveWeight(state, 'right'),
 		// @TODO
-		[ACTIONS.next]: state => state,
+		[MUTATIONS.next]: state => state,
 		// @TODO
-		[ACTIONS.pause]: state => state,
+		[MUTATIONS.pause]: state => state,
 		// @TODO
-		[ACTIONS.play]: state => state,
+		[MUTATIONS.play]: state => state,
 		// @TODO
-		[ACTIONS.reset]: createInitialState,
+		[MUTATIONS.reset]: createInitialState,
 	},
 });
