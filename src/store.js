@@ -2,24 +2,29 @@ import { createStore } from 'vuex';
 
 /**
  * Main type definitions
- *
- * @typedef {
+ */
+
+/** @typedef {
      | 'initial'
      | 'playing'
      | 'paused'
      | 'left-won'
      | 'right-won'
    } GameStatus
- *
- * @typedef {'square' | 'triangle' | 'circle'} Shape
- * @typedef {[number, number]} Position
- * @typedef {'left' | 'right'} Player
- *
+ */
+
+/** @typedef {'square' | 'triangle' | 'circle'} Shape */
+/** @typedef {[number, number]} Position */
+/** @typedef {'left' | 'right'} Player */
+
+/**
  * @typedef  {Object} Weight
  * @property {Shape} shape
  * @property {Position} position
  * @property {Player} owner
- *
+ */
+
+/**
  * @typedef  {Object} State
  * @property {GameStatus} status
  * @property {Weight | null} active
@@ -77,9 +82,7 @@ export const ACTIONS = {
 	reset: 'reset',
 };
 
-/**
- * @returns {State}
- */
+/** @returns {State} */
 const createInitialState = () => ({
 	active: null,
 	list: [],
