@@ -118,6 +118,8 @@ const createInitialState = () => ({
  * @param   {Player} player
  * @param   {Weight} props
  * @returns {Weight}
+ *
+ * TODO extract player and board logic outside of weight creation
  */
 const createWeight = (player, props = {}) => {
 	let position = props.position || calculateBoardLimitsForPlayer(player)[0];
@@ -166,18 +168,18 @@ const isWithinBoard = (position, [start, end]) =>
 const calculateBoardLimitsForPlayer = player =>
 	player === 'left'
 		? [
-			[0, 0],
+			[1, 1],
 			[
-				Math.floor(GAME_CONFIGURATION.width / 2) - 1,
-				GAME_CONFIGURATION.height - 1,
+				Math.floor(GAME_CONFIGURATION.width / 2),
+				GAME_CONFIGURATION.height,
 			]
 		]
 		: [
 			[
-				Math.ceil(GAME_CONFIGURATION.width / 2) - 1,
-				0,
+				Math.ceil(GAME_CONFIGURATION.width / 2),
+				1,
 			],
-			[GAME_CONFIGURATION.width - 1, GAME_CONFIGURATION.height - 1]
+			[GAME_CONFIGURATION.width, GAME_CONFIGURATION.height]
 		];
 
 /**
