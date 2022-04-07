@@ -1,5 +1,5 @@
 <template>
-	<div class="shape __wrapper" :class="classList">{{ weight }}</div>
+	<div class="weight __wrapper" :class="classList">{{ weight }}</div>
 </template>
 
 <script>
@@ -28,7 +28,7 @@ export default {
 	}),
 	computed: {
 		size() {
-			return SIZES[Math.floor(this.weight * (SIZES.length - 1) / GAME_CONFIGURATION.maxWeight)];
+			return SIZES[Math.round(this.weight * (SIZES.length - 1) / GAME_CONFIGURATION.maxWeight)];
 		},
 		classList() {
 			return [
@@ -42,109 +42,114 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.shape {
+.weight {
 	&.__wrapper {
-		--shape-size: var(--size-m);
-		--shape-color: var(--color-rich-black);
-		--shape-background: var(--color-gains-boro);
+		--weight-size: var(--size-m);
+		--weight-color: var(--color-rich-black);
+		--weight-background: var(--color-gains-boro);
+		--weight-border-width: 1px;
 
-		width: calc(var(--shape-size) * 3);
-		height: calc(var(--shape-size) * 3);
+		width: calc(var(--weight-size) * 3);
+		height: calc(var(--weight-size) * 3);
 		display: flex;
 		justify-content: center;
 		align-items: center;
 
-		font-size: calc(var(--shape-size) * 2);
+		position: absolute;
+		bottom: calc(-1 * var(--size-m));
+
+		font-size: calc(var(--weight-size) * 2);
 		font-weight: var(--font-weight-heavy);
 
-		color: var(--shape-color);
-		border: 1px solid var(--shape-color);
-		background-color: var(--shape-background);
+		color: var(--weight-color);
+		border: var(--weight-border-width) solid var(--weight-color);
+		background-color: var(--weight-background);
 		opacity: 0.8;
 	}
 
 	&.--square { border-radius: var(--border-l); }
 	&.--circle { border-radius: 100%; }
+	/* TODO use SVG for triangles instead of the CSS hacks */
 	&.--triangle {
 		width: 0;
 		height: 0;
 		border: solid transparent;
-		border-bottom: solid var(--shape-background);
+		border-bottom: solid var(--weight-background);
 		align-items: baseline;
 
 		/* @TODO fix !important requirement */
 		border-width:
 			0
-			calc(var(--shape-size) * 1.5)
-			calc(var(--shape-size) * 2.25)
-			calc(var(--shape-size) * 1.5) !important;
+			calc(var(--weight-size) * 1.5)
+			calc(var(--weight-size) * 2.25)
+			calc(var(--weight-size) * 1.5) !important;
 		background-color: transparent !important;
 	}
 
 	&.--xs {
-		--shape-size: var(--size-xs);
-		border-width: var(--border-xs);
+		--weight-size: var(--size-xs);
+		--weight-border-width: var(--border-xs);
 	}
 	&.--s {
-		--shape-size: var(--size-s);
-		border-width: var(--border-s);
+		--weight-size: var(--size-s);
+		--weight-border-width: var(--border-s);
 	}
 	&.--l {
-		--shape-size: var(--size-l);
-		border-width: var(--border-l);
+		--weight-size: var(--size-l);
+		--weight-border-width: var(--border-l);
 	}
 	&.--xl {
-		--shape-size: var(--size-xl);
-		border-width: var(--border-xl);
+		--weight-size: var(--size-xl);
+		--weight-border-width: var(--border-xl);
 	}
 
 	&.--var1 {
-		--shape-color: var(--color-royal-purple);
-		--shape-background: var(--color-pacific-blue);
+		--weight-color: var(--color-royal-purple);
+		--weight-background: var(--color-pacific-blue);
 	}
 	&.--var2 {
-		--shape-color: var(--color-gains-boro);
-		--shape-background: var(--color-pewter-blue);
+		--weight-color: var(--color-gains-boro);
+		--weight-background: var(--color-pewter-blue);
 	}
 	&.--var3 {
-		--shape-color: var(--color-granny-apple);
-		--shape-background: var(--color-cadet-crayola);
+		--weight-color: var(--color-granny-apple);
+		--weight-background: var(--color-cadet-crayola);
 	}
 	&.--var4 {
-		--shape-color: var(--color-cadet-crayola);
-		--shape-background: var(--color-light-orange);
+		--weight-color: var(--color-cadet-crayola);
+		--weight-background: var(--color-light-orange);
 	}
 	&.--var5 {
-		--shape-color: var(--color-viridian-green);
-		--shape-background: var(--color-royal-purple);
+		--weight-color: var(--color-viridian-green);
+		--weight-background: var(--color-royal-purple);
 	}
 	&.--var6 {
-		--shape-color: var(--color-army-green);
-		--shape-background: var(--color-granny-apple);
+		--weight-color: var(--color-army-green);
+		--weight-background: var(--color-granny-apple);
 	}
 	&.--var7 {
-		--shape-color: var(--color-sheen-gold);
-		--shape-background: var(--color-army-green);
+		--weight-color: var(--color-sheen-gold);
+		--weight-background: var(--color-army-green);
 	}
 	&.--var8 {
-		--shape-color: var(--color-english-violet);
-		--shape-background: var(--color-orange-pantone);
+		--weight-color: var(--color-english-violet);
+		--weight-background: var(--color-orange-pantone);
 	}
 	&.--var9 {
-		--shape-color: var(--color-old-lavender);
-		--shape-background: var(--color-sheen-gold);
+		--weight-color: var(--color-old-lavender);
+		--weight-background: var(--color-sheen-gold);
 	}
 	&.--var10 {
-		--shape-color: var(--color-light-orange);
-		--shape-background: var(--color-english-violet);
+		--weight-color: var(--color-light-orange);
+		--weight-background: var(--color-english-violet);
 	}
 	&.--var11 {
-		--shape-color: var(--color-pacific-blue);
-		--shape-background: var(--color-old-lavender);
+		--weight-color: var(--color-pacific-blue);
+		--weight-background: var(--color-old-lavender);
 	}
 	&.--var12 {
-		--shape-color: var(--color-pewter-blue);
-		--shape-background: var(--color-gains-boro);
+		--weight-color: var(--color-pewter-blue);
+		--weight-background: var(--color-gains-boro);
 	}
 }
 </style>
