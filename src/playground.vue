@@ -1,11 +1,11 @@
 <template>
-	<div ref="wrapper" class="playground__wrapper">
+	<div class="playground__wrapper">
 		<actions-board
 			:state="gameState"
 			class="playground__actions"
 			@action="onActionChange"
 		/>
-		<div class="playground__board">
+		<div ref="board" class="playground__board">
 			<scale
 				:bending="bending"
 				@board="board = $event"
@@ -122,7 +122,7 @@ export default {
 	}),
 	mounted() {
 		window.addEventListener('keydown', this.onKeyPress)
-		this.playgroundHeight = this.$refs.wrapper?.getBoundingClientRect().height || null;
+		this.playgroundHeight = this.$refs.board?.getBoundingClientRect().height || null;
 	},
 	unmounted() {
 		window.removeEventListener('keydown', this.onKeyPress)
