@@ -1,25 +1,33 @@
 <template>
-	<div ref="wrapper" class="playground __wrapper">
-		<scale
-			:bending="bending"
-			@board="board = $event"
+	<div ref="wrapper" class="playground__wrapper">
+		<actions-board
+			:state="gameState"
+			class="playground__actions"
+			@action="onActionChange"
 		/>
-		<div
-			v-for="(weight, index) in weightList"
-			:key="index"
-			:style="weight.style"
-			class="playground __weight"
-		>
-			<weight
-				:weight="weight.value"
-				:shape="weight.shape"
+		<div class="playground__board">
+			<scale
+				:bending="bending"
+				@board="board = $event"
 			/>
+			<div
+				v-for="(weight, index) in weightList"
+				:key="index"
+				:style="weight.style"
+				class="playground__weight"
+			>
+				<weight
+					:weight="weight.value"
+					:shape="weight.shape"
+				/>
+			</div>
 		</div>
 	</div>
 </template>
 
 <script>
 import { mapState, mapActions } from 'vuex';
+import ActionsBoard, { STATES } from './components/actions-board.vue';
 import Scale from './components/scale.vue';
 import Weight from './components/weight.vue';
 import { calculateYInLinearEquation } from './utils';
@@ -72,7 +80,7 @@ const calculatePositionWithinPlayground = (position, config) => {
 };
 
 export default {
-	components: { Scale, Weight },
+	components: { ActionsBoard, Scale, Weight },
 	data: () => ({
 		/** @property {BoardConfig | null} */
 		board: null,
@@ -101,6 +109,15 @@ export default {
 		},
 		bending(state, getters) {
 			return getters.bending;
+		},
+		gameState(state) {
+			return ({
+				'initial': STATES.stop,
+				'playing': STATES.play,
+				'paused': STATES.pause,
+				'left-won': STATES.stop,
+				'right-won': STATES.stop,
+			})[state.status];
 		},
 	}),
 	mounted() {
@@ -131,11 +148,18 @@ export default {
 			action?.();
 		},
 		/**
+		 *
+		 * @param action
+		 */
+		onActionChange(action) {
+
+		},
+		/**
 		 * @param   {Weight} weight
 		 * @returns {Position}
 		 */
 		calculateWeightPosition(weight) {
-			if (!this.board) return ['-9000px', '-9000px'];
+			if (!this.board) return [-9000, -9000];
 
 			return calculatePositionWithinPlayground(
 				weight.position,
@@ -154,19 +178,33 @@ export default {
 
 <style scoped lang="scss">
 .playground {
-	&.__wrapper {
+	&__wrapper {
 		height: 100%;
 		width: 100%;
 		position: relative;
 		display: flex;
+		flex-direction: column;
 		justify-content: center;
+		align-items: center;
 
 		// TODO whitening in a scalable/themeable way
 		background-color: #fffffff0;
 		border-radius: var(--border-xl);
 	}
 
-	&.__weight {
+	&__actions {
+		padding: var(--space-m);
+		background-color: #ffffff;
+		border-radius: 0 0 var(--space-m) var(--space-m);
+		box-shadow: var(--shadow-s) var(--color-shadow-light);
+	}
+
+	&__board {
+		height: 100%;
+		width: 100%;
+	}
+
+	&__weight {
 		position: absolute;
 		opacity: 0.9;
 	}

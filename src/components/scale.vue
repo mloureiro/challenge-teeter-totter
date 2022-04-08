@@ -1,7 +1,7 @@
 <template>
-	<div ref="scaleWrapper" class="scale __wrapper">
-		<div ref="board" class="scale __board" :style="boardStyle"></div>
-		<div class="scale __support"></div>
+	<div ref="scaleWrapper" class="scale__wrapper">
+		<div ref="board" class="scale__board" :style="boardStyle"></div>
+		<div class="scale__support"></div>
 	</div>
 </template>
 
@@ -60,17 +60,17 @@ onUnmounted(() => window.removeEventListener('resize', updateMaxBoardAngle))
 
 <style scoped lang="scss">
 .scale {
+	&__wrapper {
 	--support-height: 5rem;
 	--support-width: 2rem;
 	--board-width: 90%;
 
-	&.__wrapper {
 		height: 100%;
 		width: 100%;
 		position: relative;
 	}
 
-	&.__board {
+	&__board {
 		height: var(--space-s);
 		width: var(--board-width);
 		position: absolute;
@@ -83,7 +83,7 @@ onUnmounted(() => window.removeEventListener('resize', updateMaxBoardAngle))
 		transition: 100ms ease-in-out;
 	}
 
-	&.__support {
+	&__support {
 		width: 0;
 		height: 0;
 		position: absolute;
