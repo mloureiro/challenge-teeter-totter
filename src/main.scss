@@ -75,28 +75,28 @@ body {
 	width: 100vw;
 	padding: var(--space-l);
 
-	--playgronud-background-size: 3rem;
-	--playgronud-background-color-primary: #e0b76d;
-	--playgronud-background-color-secondary: #b90cd8;
-	--playgronud-background-color-secondary-semi-transparent: #b90cd880;
+	--playground-background-size: 3rem;
+	--playground-background-color-primary: #e0b76d;
+	--playground-background-color-secondary: #b90cd8;
+	--playground-background-color-secondary-semi-transparent: #b90cd880;
 
 	// background (shamelessly) adapted from https://10015.io/tools/css-background-pattern-generator
-	background-color: var(--playgronud-background-color-primary);
+	background-color: var(--playground-background-color-primary);
 	background-image:
-		linear-gradient(30deg, var(--playgronud-background-color-secondary) 12%, transparent 12.5%, transparent 87%, var(--playgronud-background-color-secondary) 87.5%, var(--playgronud-background-color-secondary)),
-		linear-gradient(150deg, var(--playgronud-background-color-secondary) 12%, transparent 12.5%, transparent 87%, var(--playgronud-background-color-secondary) 87.5%, var(--playgronud-background-color-secondary)),
-		linear-gradient(30deg, var(--playgronud-background-color-secondary) 12%, transparent 12.5%, transparent 87%, var(--playgronud-background-color-secondary) 87.5%, var(--playgronud-background-color-secondary)),
-		linear-gradient(150deg, var(--playgronud-background-color-secondary) 12%, transparent 12.5%, transparent 87%, var(--playgronud-background-color-secondary) 87.5%, var(--playgronud-background-color-secondary)),
-		linear-gradient(60deg, var(--playgronud-background-color-secondary-semi-transparent) 25%, transparent 25.5%, transparent 75%, var(--playgronud-background-color-secondary-semi-transparent) 75%, var(--playgronud-background-color-secondary-semi-transparent)),
-		linear-gradient(60deg, var(--playgronud-background-color-secondary-semi-transparent) 25%, transparent 25.5%, transparent 75%, var(--playgronud-background-color-secondary-semi-transparent) 75%, var(--playgronud-background-color-secondary-semi-transparent));
+		linear-gradient(30deg, var(--playground-background-color-secondary) 12%, transparent 12.5%, transparent 87%, var(--playground-background-color-secondary) 87.5%, var(--playground-background-color-secondary)),
+		linear-gradient(150deg, var(--playground-background-color-secondary) 12%, transparent 12.5%, transparent 87%, var(--playground-background-color-secondary) 87.5%, var(--playground-background-color-secondary)),
+		linear-gradient(30deg, var(--playground-background-color-secondary) 12%, transparent 12.5%, transparent 87%, var(--playground-background-color-secondary) 87.5%, var(--playground-background-color-secondary)),
+		linear-gradient(150deg, var(--playground-background-color-secondary) 12%, transparent 12.5%, transparent 87%, var(--playground-background-color-secondary) 87.5%, var(--playground-background-color-secondary)),
+		linear-gradient(60deg, var(--playground-background-color-secondary-semi-transparent) 25%, transparent 25.5%, transparent 75%, var(--playground-background-color-secondary-semi-transparent) 75%, var(--playground-background-color-secondary-semi-transparent)),
+		linear-gradient(60deg, var(--playground-background-color-secondary-semi-transparent) 25%, transparent 25.5%, transparent 75%, var(--playground-background-color-secondary-semi-transparent) 75%, var(--playground-background-color-secondary-semi-transparent));
 	background-size:
-		calc(var(--playgronud-background-size))
-		calc(var(--playgronud-background-size) * 1.8); // 140px
+		calc(var(--playground-background-size))
+		calc(var(--playground-background-size) * 1.8); // 140px
 	background-position:
 		0 0,
 		0 0,
-		calc(var(--playgronud-background-size) / 2) calc(var(--playgronud-background-size) * 1.8 / 2),
-		calc(var(--playgronud-background-size) / 2) calc(var(--playgronud-background-size) * 1.8 / 2),
+		calc(var(--playground-background-size) / 2) calc(var(--playground-background-size) * 1.8 / 2),
+		calc(var(--playground-background-size) / 2) calc(var(--playground-background-size) * 1.8 / 2),
 		0 0,
-		calc(var(--playgronud-background-size) / 2) calc(var(--playgronud-background-size) * 1.8 / 2);
+		calc(var(--playground-background-size) / 2) calc(var(--playground-background-size) * 1.8 / 2);
 }
