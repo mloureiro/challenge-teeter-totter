@@ -19,11 +19,11 @@
 </template>
 
 <script>
-import { mapState, mapMutations } from 'vuex';
+import { mapState, mapActions } from 'vuex';
 import Scale from './components/scale.vue';
 import Weight from './components/weight.vue';
 import { calculateYInLinearEquation } from './utils';
-import { MUTATIONS, GAME_CONFIGURATION } from './store';
+import { GAME_CONFIGURATION, ACTIONS } from './store';
 
 /**
  * @typedef {import('./store').State} State
@@ -111,11 +111,11 @@ export default {
 		window.removeEventListener('keydown', this.onKeyPress)
 	},
 	methods: {
-		...mapMutations({
-			onMoveLeft: MUTATIONS.moveLeft,
-			onMoveRight: MUTATIONS.moveRight,
-			onPause: MUTATIONS.pause,
-			onPlay: MUTATIONS.play,
+		...mapActions({
+			onMoveLeft: ACTIONS.moveLeft,
+			onMoveRight: ACTIONS.moveRight,
+			onPause: ACTIONS.pause,
+			onPlay: ACTIONS.play,
 		}),
 		/**
 		 * @param {Event} event

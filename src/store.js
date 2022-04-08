@@ -64,6 +64,7 @@ export const GAME_CONFIGURATION = {
 	minWeight: 1,
 	maxWeight: 10,
 	maxBending: 30,
+	tickTime: 800,
 };
 
 /**
@@ -79,30 +80,46 @@ const STATUS = {
 };
 
 /**
- * Available actions
- *   Reason to use an enum-object for all the actions, is that we avoid
- *   using hardcoded strings throughout the application, making it easier
- *   to manage/refactor, but also avoiding possible typos.
+ * Available mutations
  *
  * @typedef {
      | 'create-weight'
-     | 'move-left'
-     | 'move-right'
-     | 'next'
-     | 'pause'
-     | 'play'
+     | 'move-active-weight'
      | 'reset'
    } Mutations
  * @type {Object.<string, Mutations>}
  */
 export const MUTATIONS = {
 	addWeight: 'add-weight',
+	move: 'move-active-weight',
+	reset: 'reset',
+};
+
+/**
+ * Available actions
+ *   Reason to use an enum-object for all the actions, is that we avoid
+ *   using hardcoded strings throughout the application, making it easier
+ *   to manage/refactor, but also avoiding possible typos.
+ *
+ * @typedef {
+     | 'move-left'
+     | 'move-right'
+     | 'next-iteration'
+     | 'pause'
+     | 'play'
+     | 'reset'
+     | 'stop'
+   } Actions
+ * @type {Object.<string, Actions>}
+ */
+export const ACTIONS = {
 	moveLeft: 'move-left',
 	moveRight: 'move-right',
 	next: 'next-iteration',
 	play: 'play',
 	pause: 'pause',
 	reset: 'reset',
+	stop: 'stop',
 };
 
 /** @returns {State} */
@@ -202,8 +219,6 @@ const movePosition = (direction, position) =>
  * @param   {State} state
  * @param   {'left' | 'right' | 'down'} direction
  * @returns {State}
- *
- * TODO throttle to reduce the amount of actions per second user can do
  */
 const moveActiveWeight = (state, direction) => {
 	if (!state.active || !state.player) return state;
@@ -219,6 +234,8 @@ const moveActiveWeight = (state, direction) => {
 		active: clonedWeight,
 	};
 };
+
+let playerSubscription = null;
 
 export const store = createStore({
 	/**
@@ -237,9 +254,12 @@ export const store = createStore({
 		bending(state) { return 0; },
 	},
 	/**
-	 * @type {Object.<Mutations, function(State): State>} mutations
+	 * @type {Object.<Mutations, function(State): void>} mutations
 	 */
 	mutations: {
+		[MUTATIONS.reset]: state =>
+			Object.entries(createInitialState())
+				.forEach(([key, value]) => state[key] = value),
 		[MUTATIONS.addWeight]: state => {
 			state.player = !state.player || state.player === PLAYERS.left
 				? PLAYERS.right
@@ -250,15 +270,36 @@ export const store = createStore({
 				: state.list;
 			state.active = weight;
 		},
-		[MUTATIONS.moveLeft]: state => moveActiveWeight(state, 'left'),
-		[MUTATIONS.moveRight]: state => moveActiveWeight(state, 'right'),
+		[MUTATIONS.move]: (state, newPosition) => {
+			if (state.active)
+				state.active.position = newPosition;
+		},
+	},
+	actions: {
+		// TODO throttle to reduce the amount of actions per second user can do
+		[ACTIONS.moveLeft]: ({ state, commit }) =>
+			commit(MUTATIONS.move, moveActiveWeight(state, 'left')),
+		[ACTIONS.moveRight]: ({ state, commit }) =>
+			commit(MUTATIONS.move, moveActiveWeight(state, 'right')),
+		[ACTIONS.reset]: async ({ commit, dispatch }) => {
+			commit(MUTATIONS.reset);
+			await dispatch(ACTIONS.stop);
+		},
+		[ACTIONS.stop]: () => {
+			if (playerSubscription) {
+				playerSubscription.off();
+				playerSubscription = null;
+			}
+		},
+		// TODO support incremental ticks
+		[ACTIONS.play]: async ({ dispatch }) => {
+			await dispatch(ACTIONS.stop);
+			const intervalId = setInterval(() => dispatch(ACTIONS.next), GAME_CONFIGURATION.tickTime);
+			playerSubscription = { off: () => clearInterval(intervalId) };
+		},
 		// @TODO
-		[MUTATIONS.next]: state => state,
-		// @TODO
-		[MUTATIONS.pause]: state => state,
-		// @TODO
-		[MUTATIONS.play]: state => state,
-		// @TODO
-		[MUTATIONS.reset]: createInitialState,
+		[ACTIONS.next]: () => {
+			console.log('tick')
+		},
 	},
 });
