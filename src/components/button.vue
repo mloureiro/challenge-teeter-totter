@@ -39,6 +39,7 @@ export default {
 	&.--pressed {
 		background-color: var(--color-primary);
 		color: var(--color-light);
+		fill: var(--color-light);
 	}
 
 	&.--pressed,
