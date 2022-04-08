@@ -27,7 +27,7 @@
 
 <script>
 import { mapState, mapActions } from 'vuex';
-import ActionsBoard, { STATES } from './components/actions-board.vue';
+import ActionsBoard, { STATES as BOARD_ACTION } from './components/actions-board.vue';
 import Scale from './components/scale.vue';
 import Weight from './components/weight.vue';
 import { calculateYInLinearEquation } from './utils';
@@ -112,11 +112,11 @@ export default {
 		},
 		gameState(state) {
 			return ({
-				'initial': STATES.stop,
-				'playing': STATES.play,
-				'paused': STATES.pause,
-				'left-won': STATES.stop,
-				'right-won': STATES.stop,
+				'initial': BOARD_ACTION.stop,
+				'playing': BOARD_ACTION.play,
+				'paused': BOARD_ACTION.pause,
+				'left-won': BOARD_ACTION.stop,
+				'right-won': BOARD_ACTION.stop,
 			})[state.status];
 		},
 	}),
@@ -131,8 +131,9 @@ export default {
 		...mapActions({
 			onMoveLeft: ACTIONS.moveLeft,
 			onMoveRight: ACTIONS.moveRight,
-			onPause: ACTIONS.pause,
+			onPause: ACTIONS.stop,
 			onPlay: ACTIONS.play,
+			onReset: ACTIONS.reset,
 		}),
 		/**
 		 * @param {Event} event
@@ -148,11 +149,16 @@ export default {
 			action?.();
 		},
 		/**
-		 *
-		 * @param action
+		 * @param {'play' | 'pause' | 'stop' }action
 		 */
 		onActionChange(action) {
+			const actionCallback = {
+				[BOARD_ACTION.play]: this.onPlay,
+				[BOARD_ACTION.pause]: this.onPause,
+				[BOARD_ACTION.stop]: this.onReset,
+			}[action];
 
+			actionCallback?.();
 		},
 		/**
 		 * @param   {Weight} weight

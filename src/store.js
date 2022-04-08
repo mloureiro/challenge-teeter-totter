@@ -85,6 +85,8 @@ const STATUS = {
  * @typedef {
      | 'create-weight'
      | 'move-active-weight'
+     | 'play'
+     | 'pause'
      | 'reset'
    } Mutations
  * @type {Object.<string, Mutations>}
@@ -93,6 +95,8 @@ export const MUTATIONS = {
 	addWeight: 'add-weight',
 	move: 'move-active-weight',
 	reset: 'reset',
+	play: 'play',
+	pause: 'pause',
 };
 
 /**
@@ -105,7 +109,6 @@ export const MUTATIONS = {
      | 'move-left'
      | 'move-right'
      | 'next-iteration'
-     | 'pause'
      | 'play'
      | 'reset'
      | 'stop'
@@ -117,7 +120,6 @@ export const ACTIONS = {
 	moveRight: 'move-right',
 	next: 'next-iteration',
 	play: 'play',
-	pause: 'pause',
 	reset: 'reset',
 	stop: 'stop',
 };
@@ -235,7 +237,33 @@ const moveActiveWeight = (state, direction) => {
 	};
 };
 
-let playerSubscription = null;
+/**
+ * Centralize the interval logic to ease the usage
+ *
+ * @typedef  {Object} Ticker
+ * @property {interval} number
+ * @property {function(): void} callback
+ * @property {function(): void} start
+ * @property {function(): void} stop
+ *
+ * @returns {Ticker}
+ */
+const createTicker = ({ interval = 200, callback = () => null }) => {
+	const state = {
+		subscriptionId: null,
+		interval,
+		callback: callback,
+	};
+
+	const start = () =>
+		state.subscriptionId = setInterval(state.callback, state.interval);
+	const stop = () =>
+		state.subscriptionId && clearInterval(state.subscriptionId);
+
+	return Object.freeze({ start, stop });
+};
+
+let ticker = null;
 
 export const store = createStore({
 	/**
@@ -257,9 +285,6 @@ export const store = createStore({
 	 * @type {Object.<Mutations, function(State): void>} mutations
 	 */
 	mutations: {
-		[MUTATIONS.reset]: state =>
-			Object.entries(createInitialState())
-				.forEach(([key, value]) => state[key] = value),
 		[MUTATIONS.addWeight]: state => {
 			state.player = !state.player || state.player === PLAYERS.left
 				? PLAYERS.right
@@ -274,6 +299,11 @@ export const store = createStore({
 			if (state.active)
 				state.active.position = newPosition;
 		},
+		[MUTATIONS.play]: state => state.status = STATUS.playing,
+		[MUTATIONS.pause]: state => state.status = STATUS.paused,
+		[MUTATIONS.reset]: state =>
+			Object.entries(createInitialState())
+				.forEach(([key, value]) => state[key] = value),
 	},
 	actions: {
 		// TODO throttle to reduce the amount of actions per second user can do
@@ -282,20 +312,25 @@ export const store = createStore({
 		[ACTIONS.moveRight]: ({ state, commit }) =>
 			commit(MUTATIONS.move, moveActiveWeight(state, 'right')),
 		[ACTIONS.reset]: async ({ commit, dispatch }) => {
-			commit(MUTATIONS.reset);
-			await dispatch(ACTIONS.stop);
-		},
-		[ACTIONS.stop]: () => {
-			if (playerSubscription) {
-				playerSubscription.off();
-				playerSubscription = null;
+			if (!ticker) {
+				ticker = createTicker({
+					callback: () => dispatch(ACTIONS.next),
+					interval: GAME_CONFIGURATION.tickTime,
+				});
 			}
+			ticker.stop();
+			commit(MUTATIONS.reset);
+		},
+		[ACTIONS.stop]: async ({ commit, dispatch }) => {
+			if (!ticker) await dispatch(ACTIONS.reset);
+			ticker.stop();
+			commit(MUTATIONS.pause);
 		},
 		// TODO support incremental ticks
-		[ACTIONS.play]: async ({ dispatch }) => {
-			await dispatch(ACTIONS.stop);
-			const intervalId = setInterval(() => dispatch(ACTIONS.next), GAME_CONFIGURATION.tickTime);
-			playerSubscription = { off: () => clearInterval(intervalId) };
+		[ACTIONS.play]: async ({ commit, dispatch }) => {
+			if (!ticker) await dispatch(ACTIONS.reset);
+			ticker.start();
+			commit(MUTATIONS.play);
 		},
 		// @TODO
 		[ACTIONS.next]: () => {

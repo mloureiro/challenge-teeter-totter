@@ -3,7 +3,7 @@
 		<btn
 			v-for="item in actions"
 			:pressed="item.action === state"
-			@click="$emit(item.action)"
+			@click="$emit('action', item.action)"
 		>
 			<component :is="item.component" class="actions-board__icon" />
 			{{ item.label }}
