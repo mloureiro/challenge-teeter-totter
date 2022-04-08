@@ -71,7 +71,7 @@ export const GAME_CONFIGURATION = {
  * Game status enum
  * @type {Object.<string, GameStatus>}
  */
-const STATUS = {
+export const STATUS = {
 	initial: 'initial',
 	playing: 'playing',
 	paused: 'paused',
@@ -83,6 +83,7 @@ const STATUS = {
  * Available mutations
  *
  * @typedef {
+     | 'add-active-weight-to-history'
      | 'create-weight'
      | 'move-active-weight'
      | 'play'
@@ -92,7 +93,7 @@ const STATUS = {
  * @type {Object.<string, Mutations>}
  */
 export const MUTATIONS = {
-	addWeight: 'add-weight',
+	nextTurn: 'start-next-player-turn',
 	move: 'move-active-weight',
 	reset: 'reset',
 	play: 'play',
@@ -106,6 +107,7 @@ export const MUTATIONS = {
  *   to manage/refactor, but also avoiding possible typos.
  *
  * @typedef {
+     | 'move-down'
      | 'move-left'
      | 'move-right'
      | 'next-iteration'
@@ -116,6 +118,7 @@ export const MUTATIONS = {
  * @type {Object.<string, Actions>}
  */
 export const ACTIONS = {
+	moveDown: 'move-down',
 	moveLeft: 'move-left',
 	moveRight: 'move-right',
 	next: 'next-iteration',
@@ -141,7 +144,7 @@ const createInitialState = () => ({
  * TODO extract player and board logic outside of weight creation
  */
 const createWeight = (player, props = {}) => {
-	let position = props.position || calculateBoardLimitsForPlayer(player)[0];
+	const [[xStart, yStart], [xEnd]] = calculateBoardLimitsForPlayer(player);
 
 	/** @type Weight */
 	const state = {
@@ -151,7 +154,7 @@ const createWeight = (player, props = {}) => {
 			GAME_CONFIGURATION.maxWeight,
 		),
 		...props,
-		position,
+		position: [randomNumber(xStart, xEnd), yStart],
 		player,
 	};
 
@@ -187,10 +190,10 @@ const isWithinBoard = (position, [start, end]) =>
 const calculateBoardLimitsForPlayer = player =>
 	player === 'left'
 		? [
-			[1, 1],
+			[0, 0],
 			[
-				Math.floor(GAME_CONFIGURATION.width / 2),
-				GAME_CONFIGURATION.height,
+				Math.floor(GAME_CONFIGURATION.width / 2) - 1,
+				GAME_CONFIGURATION.height - 1 ,
 			]
 		]
 		: [
@@ -198,7 +201,7 @@ const calculateBoardLimitsForPlayer = player =>
 				Math.ceil(GAME_CONFIGURATION.width / 2),
 				1,
 			],
-			[GAME_CONFIGURATION.width, GAME_CONFIGURATION.height]
+			[GAME_CONFIGURATION.width -1, GAME_CONFIGURATION.height - 1]
 		];
 
 /**
@@ -218,23 +221,17 @@ const movePosition = (direction, position) =>
 
 /**
  * (Try to) Move active weight in the defined direction
- * @param   {State} state
+ * @param   {Position} currentPosition
+ * @param   {Player} player
  * @param   {'left' | 'right' | 'down'} direction
- * @returns {State}
+ * @returns {Position}
  */
-const moveActiveWeight = (state, direction) => {
-	if (!state.active || !state.player) return state;
-
-	const newPosition = movePosition(direction, state.active.position)
-	const board = calculateBoardLimitsForPlayer(state.player);
-	if (!isWithinBoard(newPosition, board)) return state;
-
-	const clonedWeight = state.active.clone();
-	clonedWeight.position = newPosition;
-	return {
-		...state,
-		active: clonedWeight,
-	};
+const calculateNewPosition = (currentPosition, player, direction) => {
+	const newPosition = movePosition(direction, currentPosition)
+	const board = calculateBoardLimitsForPlayer(player);
+	return isWithinBoard(newPosition, board)
+		? newPosition
+		: currentPosition;
 };
 
 /**
@@ -265,6 +262,17 @@ const createTicker = ({ interval = 200, callback = () => null }) => {
 
 let ticker = null;
 
+/**
+ * Guard to ensure action is only executed if it's time
+ * for the end user to play
+ * @param {State} state
+ * @param {function(): void} callback
+ */
+const onlyOnHumanTime = (state, callback) => {
+	if (state.player === PLAYERS.left && state.active)
+		callback();
+}
+
 export const store = createStore({
 	/**
 	 * @returns {State}
@@ -285,15 +293,12 @@ export const store = createStore({
 	 * @type {Object.<Mutations, function(State): void>} mutations
 	 */
 	mutations: {
-		[MUTATIONS.addWeight]: state => {
+		[MUTATIONS.nextTurn]: state => {
 			state.player = !state.player || state.player === PLAYERS.left
 				? PLAYERS.right
 				: PLAYERS.left;
-			const weight = createWeight(state.player);
-			state.list = state.active
-				? [...state.list, state.active]
-				: state.list;
-			state.active = weight;
+			state.active = createWeight(state.player);
+			state.list = [...state.list, state.active];
 		},
 		[MUTATIONS.move]: (state, newPosition) => {
 			if (state.active)
@@ -307,10 +312,15 @@ export const store = createStore({
 	},
 	actions: {
 		// TODO throttle to reduce the amount of actions per second user can do
+		[ACTIONS.moveDown]: ({ state, commit }) =>
+			onlyOnHumanTime(state,
+				() => commit(MUTATIONS.move, calculateNewPosition(state.active.position, state.player, 'down'))),
 		[ACTIONS.moveLeft]: ({ state, commit }) =>
-			commit(MUTATIONS.move, moveActiveWeight(state, 'left')),
+			onlyOnHumanTime(state,
+				() => commit(MUTATIONS.move, calculateNewPosition(state.active.position, state.player, 'left'))),
 		[ACTIONS.moveRight]: ({ state, commit }) =>
-			commit(MUTATIONS.move, moveActiveWeight(state, 'right')),
+			onlyOnHumanTime(state,
+				() => commit(MUTATIONS.move, calculateNewPosition(state.active.position, state.player, 'right'))),
 		[ACTIONS.reset]: async ({ commit, dispatch }) => {
 			if (!ticker) {
 				ticker = createTicker({
@@ -332,9 +342,21 @@ export const store = createStore({
 			ticker.start();
 			commit(MUTATIONS.play);
 		},
-		// @TODO
-		[ACTIONS.next]: () => {
-			console.log('tick')
+		[ACTIONS.next]: async ({ state, commit }) => {
+			if (state.status !== STATUS.playing)
+				return;
+
+			if (!state.active)
+				return commit(MUTATIONS.nextTurn);
+
+			const hasActiveReachedBottom = state.active.position[1] >= GAME_CONFIGURATION.height - 1;
+			if (hasActiveReachedBottom)
+				commit(MUTATIONS.nextTurn);
+
+			return commit(
+				MUTATIONS.move,
+				calculateNewPosition(state.active.position, state.player, 'down'),
+			);
 		},
 	},
 });
