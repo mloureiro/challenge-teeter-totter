@@ -64,7 +64,6 @@ export default {
 		color: var(--weight-color);
 		border: var(--weight-border-width) solid var(--weight-color);
 		background-color: var(--weight-background);
-		opacity: 0.8;
 	}
 
 	&.--square { border-radius: var(--border-l); }

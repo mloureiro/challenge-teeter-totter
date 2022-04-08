@@ -1,5 +1,9 @@
 <template>
 	<div ref="wrapper" class="playground __wrapper">
+		<scale
+			:bending="bending"
+			@board="board = $event"
+		/>
 		<div
 			v-for="(weight, index) in weightList"
 			:key="index"
@@ -11,10 +15,6 @@
 				:shape="weight.shape"
 			/>
 		</div>
-		<scale
-			:bending="bending"
-			@board="board = $event"
-		/>
 	</div>
 </template>
 
@@ -158,13 +158,17 @@ export default {
 		height: 100%;
 		width: 100%;
 		position: relative;
-		padding: var(--space-s);
 		display: flex;
 		justify-content: center;
+
+		// TODO whitening in a scalable/themeable way
+		background-color: #fffffff0;
+		border-radius: var(--border-xl);
 	}
 
 	&.__weight {
 		position: absolute;
+		opacity: 0.9;
 	}
 }
 </style>
