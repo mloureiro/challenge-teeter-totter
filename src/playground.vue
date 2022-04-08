@@ -31,7 +31,7 @@ import ActionsBoard, { STATES as BOARD_ACTION } from './components/actions-board
 import Scale from './components/scale.vue';
 import Weight from './components/weight.vue';
 import { calculateYInLinearEquation } from './utils';
-import { GAME_CONFIGURATION, ACTIONS } from './store';
+import { GAME_CONFIGURATION, ACTIONS, STATUS as GAME_STATUS } from './store';
 
 /**
  * @typedef {import('./store').State} State
@@ -110,13 +110,16 @@ export default {
 		bending(state, getters) {
 			return getters.bending;
 		},
+		gameStatus(state) {
+			return state.status;
+		},
 		gameState(state) {
 			return ({
-				'initial': BOARD_ACTION.stop,
-				'playing': BOARD_ACTION.play,
-				'paused': BOARD_ACTION.pause,
-				'left-won': BOARD_ACTION.stop,
-				'right-won': BOARD_ACTION.stop,
+				[GAME_STATUS.initial]: BOARD_ACTION.stop,
+				[GAME_STATUS.playing]: BOARD_ACTION.play,
+				[GAME_STATUS.paused]: BOARD_ACTION.pause,
+				[GAME_STATUS.leftWon]: BOARD_ACTION.stop,
+				[GAME_STATUS.rightWon]: BOARD_ACTION.stop,
 			})[state.status];
 		},
 	}),
