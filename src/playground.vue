@@ -132,12 +132,22 @@ export default {
 	},
 	methods: {
 		...mapActions({
+			onMoveDown: ACTIONS.next,
 			onMoveLeft: ACTIONS.moveLeft,
 			onMoveRight: ACTIONS.moveRight,
 			onPause: ACTIONS.stop,
 			onPlay: ACTIONS.play,
 			onReset: ACTIONS.reset,
 		}),
+		onToggle() {
+			const action = {
+				[GAME_STATUS.initial]: this.onPlay,
+				[GAME_STATUS.playing]: this.onPause,
+				[GAME_STATUS.paused]: this.onPlay,
+			}[this.gameStatus];
+
+			action?.();
+		},
 		/**
 		 * @param {Event} event
 		 *
@@ -145,8 +155,11 @@ export default {
 		 */
 		onKeyPress(event) {
 			const action = {
+				ArrowDown: this.onMoveDown,
 				ArrowRight: this.onMoveRight,
 				ArrowLeft: this.onMoveLeft,
+				Escape: this.onReset,
+				' ': this.onToggle,
 			}[event.key];
 
 			action?.();
