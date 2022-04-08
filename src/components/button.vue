@@ -4,7 +4,6 @@
 		:class="{ '--pressed': pressed }"
 		class="btn__button"
 		role="button"
-		@click="$emit('click')"
 	>
 		<slot>{{ label }}</slot>
 	</button>
@@ -40,6 +39,10 @@ export default {
 		background-color: var(--color-primary);
 		color: var(--color-light);
 		fill: var(--color-light);
+	}
+
+	&.--pressed {
+		background-color: var(--color-secondary);
 	}
 
 	&.--pressed,
