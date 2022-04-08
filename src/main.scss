@@ -44,6 +44,15 @@
 	--color-mint-cream: #ebf5ee;
 	--color-granny-apple: #ace894;
 
+	--color-primary: #3d5467;
+	--color-light: #ffffff;
+	--color-shadow-light: #a6afc3;
+	--color-shadow-dark: #363f53;
+
+	/* Shadows */
+	--shadow-s: 0 var(--border-xs) var(--border-s);
+	--shadow-m: 0 var(--border-s) var(--border-m);
+
 	/* Base styles */
 	font-family: var(--font-family-sans);
 	font-size: var(--size-m);
