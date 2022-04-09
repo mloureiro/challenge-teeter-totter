@@ -105,6 +105,7 @@ export const STATUS = {
  * @type {Object.<string, Mutations>}
  */
 export const MUTATIONS = {
+	archiveWeight: 'add-active-weight-to-history',
 	nextTurn: 'start-next-player-turn',
 	move: 'move-active-weight',
 	reset: 'reset',
@@ -360,15 +361,18 @@ export const store = createStore({
 	 */
 	mutations: {
 		[MUTATIONS.nextTurn]: state => {
-			if (state.active)
-				state.list = [...state.list, state.active];
 			state.player = !state.player || state.player === PLAYERS.human
 				? PLAYERS.machine
 				: PLAYERS.human;
 			state.active = createWeight(state.player);
 		},
+		[MUTATIONS.archiveWeight]: state => {
+			if (state.active) {
+				state.list = [...state.list, state.active];
+				state.active = null;
+			}
+		},
 		[MUTATIONS.move]: (state, newPosition) => {
-			if (state.active)
 				state.active.position = newPosition;
 		},
 		[MUTATIONS.play]: state => state.status = STATUS.playing,
@@ -415,7 +419,7 @@ export const store = createStore({
 			ticker.start();
 			commit(MUTATIONS.play);
 		},
-		[ACTIONS.next]: async ({ state, commit }) => {
+		[ACTIONS.next]: async ({ state, commit, getters }) => {
 			if (state.status !== STATUS.playing)
 				return;
 
@@ -433,24 +437,24 @@ export const store = createStore({
 			if (!hasActiveReachedBottom)
 				return;
 
-			const hasGameFinished = state.bending > GAME_CONFIGURATION.maxBending;
-			if (!hasGameFinished) {
-				commit(MUTATIONS.nextTurn);
+			commit(MUTATIONS.archiveWeight);
 
-				if (state.player === PLAYERS.machine) {
-					ticker.interval = GAME_CONFIGURATION.autoTickTime;
-				} else {
-					if (humanTickerTime < GAME_CONFIGURATION.maxTickTime) {
-						humanTickerTime += GAME_CONFIGURATION.tickTimeIncrement;
-					}
-					ticker.interval = humanTickerTime;
-				}
-
-				return;
+			const hasGameFinished = Math.abs(getters.bending) > GAME_CONFIGURATION.maxBending;
+			if (hasGameFinished) {
+				ticker.stop();
+				return commit(state.player === PLAYERS.human ? MUTATIONS.playerWon : MUTATIONS.playerLost)
 			}
 
-			ticker.stop();
-			commit(state.player === PLAYERS.human ? MUTATIONS.playerWon : MUTATIONS.playerLost)
+			commit(MUTATIONS.nextTurn);
+
+			if (state.player === PLAYERS.machine) {
+				ticker.interval = GAME_CONFIGURATION.autoTickTime;
+			} else {
+				if (humanTickerTime < GAME_CONFIGURATION.maxTickTime) {
+					humanTickerTime += GAME_CONFIGURATION.tickTimeIncrement;
+				}
+				ticker.interval = humanTickerTime;
+			}
 		},
 	},
 });
