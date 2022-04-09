@@ -5,7 +5,7 @@
 			status="lost"
 			@close="onReset"
 		/>
-		<actions-board
+		<game-actions
 			:state="gameState"
 			class="playground__actions"
 			@action="onActionChange"
@@ -32,8 +32,8 @@
 
 <script>
 import { mapState, mapActions } from 'vuex';
-import ActionsBoard, { STATES as BOARD_ACTION } from './components/actions-board.vue';
-import GameOverModal, { STATUS as GAME_OVER_STATUS } from './components/game-over-modal.vue';
+import GameActions, { STATES as BOARD_ACTION } from './components/game-actions.vue';
+import GameOverModal from './components/game-over-modal.vue';
 import Scale from './components/scale.vue';
 import Weight from './components/weight.vue';
 import { GAME_CONFIGURATION, ACTIONS, STATUS as GAME_STATUS } from './store';
@@ -62,7 +62,7 @@ import { calculatePercentage } from './utils';
 
 export default {
 	components: {
-		ActionsBoard,
+		GameActions,
 		GameOverModal,
 		Scale,
 		Weight,
