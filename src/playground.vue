@@ -97,7 +97,10 @@ export default {
 			});
 		},
 		bending(state, getters) {
-			return Math.sign(getters.bending) * calculatePercentage(Math.abs(getters.bending), 0, GAME_CONFIGURATION.maxBending);
+			return Math.sign(getters.bending) * Math.min(
+				calculatePercentage(Math.abs(getters.bending), 0, GAME_CONFIGURATION.maxBending),
+				100,
+			);
 		},
 		gameStatus(state) {
 			return state.status;
