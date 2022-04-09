@@ -71,7 +71,10 @@ export const GAME_CONFIGURATION = {
 	weightDistributionArea: 2,   // m
 	weightDifferencePerMeter: 10,// kg = 2 * 10 kgm
 	maxBending: 30, // %
-	tickTime: 800,
+	initialTickTime: 550,
+	tickTimeIncrement: 100,
+	maxTickTime: 50,
+	autoTickTime: 50,
 };
 
 /**
@@ -267,10 +270,28 @@ const createTicker = ({ interval = 200, callback = () => null }) => {
 		state.subscriptionId = setInterval(state.callback, state.interval);
 	const stop = () =>
 		state.subscriptionId && clearInterval(state.subscriptionId);
+	const restartIfItIsRunning = () => {
+		if (!state.subscriptionId) return;
+		stop();
+		start();
+	};
 
-	return Object.freeze({ start, stop });
+	return Object.freeze({
+		get interval() {
+			return state.interval;
+		},
+		set interval(time) {
+			if (!Number.isSafeInteger(time))
+				throw Error('Ticker interval must be a finite integer');
+			state.interval = time;
+			restartIfItIsRunning();
+		},
+		start,
+		stop,
+	});
 };
 
+let humanTickerTime;
 let ticker = null;
 
 /**
@@ -369,13 +390,12 @@ export const store = createStore({
 			onlyOnHumanTime(state,
 				() => commit(MUTATIONS.move, calculateNewPosition(state.active.position, state.player, 'right'))),
 		[ACTIONS.reset]: async ({ commit, dispatch }) => {
-			if (!ticker) {
-				ticker = createTicker({
-					callback: () => dispatch(ACTIONS.next),
-					interval: GAME_CONFIGURATION.tickTime,
-				});
-			}
+			if (!ticker)
+				ticker = createTicker({ callback: () => dispatch(ACTIONS.next) });
+
 			ticker.stop();
+			humanTickerTime = GAME_CONFIGURATION.initialTickTime;
+			ticker.interval = humanTickerTime;
 			commit(MUTATIONS.reset);
 		},
 		[ACTIONS.stop]: async ({ state, commit }) => {
@@ -398,8 +418,10 @@ export const store = createStore({
 			if (state.status !== STATUS.playing)
 				return;
 
-			if (!state.active)
+			if (!state.active) {
+				ticker.interval = GAME_CONFIGURATION.autoTickTime;
 				return commit(MUTATIONS.nextTurn);
+			}
 
 			commit(
 				MUTATIONS.move,
@@ -407,11 +429,24 @@ export const store = createStore({
 			);
 
 			const hasActiveReachedBottom = state.active.position[1] >= GAME_CONFIGURATION.height - 1;
-			if (!hasActiveReachedBottom) return;
+			if (!hasActiveReachedBottom)
+				return;
 
 			const hasGameFinished = state.bending > GAME_CONFIGURATION.maxBending;
-			if (!hasGameFinished)
-				return commit(MUTATIONS.nextTurn);
+			if (!hasGameFinished) {
+				commit(MUTATIONS.nextTurn);
+
+				if (state.player === PLAYERS.machine) {
+					ticker.interval = GAME_CONFIGURATION.autoTickTime;
+				} else {
+					if (humanTickerTime < GAME_CONFIGURATION.maxTickTime) {
+						humanTickerTime += GAME_CONFIGURATION.tickTimeIncrement;
+					}
+					ticker.interval = humanTickerTime;
+				}
+
+				return;
+			}
 
 			ticker.stop();
 			commit(state.player === PLAYERS.human ? MUTATIONS.playerWon : MUTATIONS.playerLost)
