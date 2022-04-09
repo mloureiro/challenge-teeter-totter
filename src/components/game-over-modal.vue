@@ -3,7 +3,7 @@
 		v-if="status"
 		:label="label"
 		:title="message"
-		@click="$emit('click')"
+		@close="$emit('close')"
 	/>
 </template>
 

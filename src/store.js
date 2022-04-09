@@ -14,8 +14,8 @@ import {
      | 'initial'
      | 'playing'
      | 'paused'
-     | 'left-won'
-     | 'right-won'
+     | 'player-won'
+     | 'player-lost'
    } GameStatus
  */
 
@@ -45,8 +45,8 @@ import {
  * @type {Object.<string, Player>}
  */
 const PLAYERS = {
-	left: 'left',
-	right: 'right',
+	human: 'left',
+	machine: 'right',
 };
 
 /**
@@ -82,8 +82,8 @@ export const STATUS = {
 	initial: 'initial',
 	playing: 'playing',
 	paused: 'paused',
-	leftWon: 'left-won',
-	rightWon: 'right-won',
+	playerWon: 'player-won',
+	gameOver: 'player-lost',
 };
 
 /**
@@ -94,6 +94,8 @@ export const STATUS = {
      | 'create-weight'
      | 'move-active-weight'
      | 'play'
+     | 'player-lost'
+     | 'player-won'
      | 'pause'
      | 'reset'
    } Mutations
@@ -104,6 +106,8 @@ export const MUTATIONS = {
 	move: 'move-active-weight',
 	reset: 'reset',
 	play: 'play',
+	playerLost: 'player-lost',
+	playerWon: 'player-won',
 	pause: 'pause',
 };
 
@@ -276,7 +280,7 @@ let ticker = null;
  * @param {function(): void} callback
  */
 const onlyOnHumanTime = (state, callback) => {
-	if (state.player === PLAYERS.left && state.active)
+	if (state.player === PLAYERS.human && state.active)
 		callback();
 }
 
@@ -335,9 +339,9 @@ export const store = createStore({
 	 */
 	mutations: {
 		[MUTATIONS.nextTurn]: state => {
-			state.player = !state.player || state.player === PLAYERS.left
-				? PLAYERS.right
-				: PLAYERS.left;
+			state.player = !state.player || state.player === PLAYERS.human
+				? PLAYERS.machine
+				: PLAYERS.human;
 			state.active = createWeight(state.player);
 			state.list = [...state.list, state.active];
 		},
@@ -346,6 +350,8 @@ export const store = createStore({
 				state.active.position = newPosition;
 		},
 		[MUTATIONS.play]: state => state.status = STATUS.playing,
+		[MUTATIONS.playerLost]: state => state.status = STATUS.gameOver,
+		[MUTATIONS.playerWon]: state => state.status = STATUS.playerWon,
 		[MUTATIONS.pause]: state => state.status = STATUS.paused,
 		[MUTATIONS.reset]: state =>
 			Object.entries(createInitialState())
@@ -372,14 +378,19 @@ export const store = createStore({
 			ticker.stop();
 			commit(MUTATIONS.reset);
 		},
-		[ACTIONS.stop]: async ({ commit, dispatch }) => {
-			if (!ticker) await dispatch(ACTIONS.reset);
+		[ACTIONS.stop]: async ({ state, commit }) => {
+			if (![STATUS.playing, STATUS.paused].includes(state.status))
+				return;
+
 			ticker.stop();
 			commit(MUTATIONS.pause);
 		},
 		// TODO support incremental ticks
-		[ACTIONS.play]: async ({ commit, dispatch }) => {
-			if (!ticker) await dispatch(ACTIONS.reset);
+		[ACTIONS.play]: async ({ state, commit, dispatch }) => {
+			if (![STATUS.initial, STATUS.paused].includes(state.status))
+				return;
+			if (!ticker)
+				await dispatch(ACTIONS.reset);
 			ticker.start();
 			commit(MUTATIONS.play);
 		},
@@ -390,14 +401,20 @@ export const store = createStore({
 			if (!state.active)
 				return commit(MUTATIONS.nextTurn);
 
-			const hasActiveReachedBottom = state.active.position[1] >= GAME_CONFIGURATION.height - 1;
-			if (hasActiveReachedBottom)
-				commit(MUTATIONS.nextTurn);
-
-			return commit(
+			commit(
 				MUTATIONS.move,
 				calculateNewPosition(state.active.position, state.player, 'down'),
 			);
+
+			const hasActiveReachedBottom = state.active.position[1] >= GAME_CONFIGURATION.height - 1;
+			if (!hasActiveReachedBottom) return;
+
+			const hasGameFinished = state.bending > GAME_CONFIGURATION.maxBending;
+			if (!hasGameFinished)
+				return commit(MUTATIONS.nextTurn);
+
+			ticker.stop();
+			commit(state.player === PLAYERS.human ? MUTATIONS.playerWon : MUTATIONS.playerLost)
 		},
 	},
 });

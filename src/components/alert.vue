@@ -8,7 +8,7 @@
 				<btn
 					:label="label"
 					role="button"
-					@click="$emit('click')"
+					@click="$emit('close')"
 				/>
 			</main>
 		</div>

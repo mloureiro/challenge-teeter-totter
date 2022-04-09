@@ -1,5 +1,10 @@
 <template>
 	<div class="playground__wrapper">
+		<game-over-modal
+			v-if="gameOverStatus"
+			:status="gameOverStatus"
+			@close="onReset"
+		/>
 		<actions-board
 			:state="gameState"
 			class="playground__actions"
@@ -28,6 +33,7 @@
 <script>
 import { mapState, mapActions } from 'vuex';
 import ActionsBoard, { STATES as BOARD_ACTION } from './components/actions-board.vue';
+import GameOverModal, { STATUS as GAME_OVER_STATUS } from './components/game-over-modal.vue';
 import Scale from './components/scale.vue';
 import Weight from './components/weight.vue';
 import { GAME_CONFIGURATION, ACTIONS, STATUS as GAME_STATUS } from './store';
@@ -54,7 +60,12 @@ import { GAME_CONFIGURATION, ACTIONS, STATUS as GAME_STATUS } from './store';
  */
 
 export default {
-	components: { ActionsBoard, Scale, Weight },
+	components: {
+		ActionsBoard,
+		GameOverModal,
+		Scale,
+		Weight,
+	},
 	data: () => ({
 		/** @property {ScaleConfig | null} */
 		scaleConfig: null,
@@ -92,9 +103,15 @@ export default {
 				[GAME_STATUS.initial]: BOARD_ACTION.stop,
 				[GAME_STATUS.playing]: BOARD_ACTION.play,
 				[GAME_STATUS.paused]: BOARD_ACTION.pause,
-				[GAME_STATUS.leftWon]: BOARD_ACTION.stop,
-				[GAME_STATUS.rightWon]: BOARD_ACTION.stop,
+				[GAME_STATUS.playerWon]: BOARD_ACTION.stop,
+				[GAME_STATUS.gameOver]: BOARD_ACTION.stop,
 			})[state.status];
+		},
+		gameOverStatus(state) {
+			return ({
+				[GAME_STATUS.gameOver]: GAME_OVER_STATUS.lost,
+				[GAME_STATUS.playerWon]: GAME_OVER_STATUS.won,
+			})[state.status] || null;
 		},
 		styleVariables() {
 			if (!this.scaleConfig) return;
@@ -204,7 +221,6 @@ export default {
 	&__wrapper {
 		height: 100%;
 		width: 100%;
-		position: relative;
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
