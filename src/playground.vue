@@ -5,10 +5,10 @@
 			class="playground__actions"
 			@action="onActionChange"
 		/>
-		<div ref="board" class="playground__board">
+		<div ref="board" class="playground__board" :style="styleVariables">
 			<scale
 				:bending="bending"
-				@board="board = $event"
+				@scale="scaleConfig = $event"
 			/>
 			<div
 				v-for="(weight, index) in weightList"
@@ -30,7 +30,6 @@ import { mapState, mapActions } from 'vuex';
 import ActionsBoard, { STATES as BOARD_ACTION } from './components/actions-board.vue';
 import Scale from './components/scale.vue';
 import Weight from './components/weight.vue';
-import { calculateYInLinearEquation } from './utils';
 import { GAME_CONFIGURATION, ACTIONS, STATUS as GAME_STATUS } from './store';
 
 /**
@@ -46,44 +45,19 @@ import { GAME_CONFIGURATION, ACTIONS, STATUS as GAME_STATUS } from './store';
  */
 
 /**
- * @typedef {Object} BoardConfig
+ * @typedef {Object} ScaleConfig
+ * @property {number} height
+ * @property {number} width
  * @property {Position} start
  * @property {Position} end
  * @property {number} radAngle
  */
 
-/**
- * Calculate weight board position equivalent in playground
- * @param   {Position} position
- * @param   {Object} config
- * @param   {number} config.totalWidthPositions
- * @param   {number} config.totalHeightPositions
- * @param   {Position} config.start
- * @param   {Position} config.end
- * @returns {Position}
- */
-const calculatePositionWithinPlayground = (position, config) => {
-	const { totalWidthPositions, totalHeightPositions, start, end } = config;
-
-	// add +1 so that the middle of the board is empty
-	const widthPositions = totalWidthPositions + 1;
-	const slotWidth = Math.abs(start[0] - end[0]) / widthPositions;
-
-	const [x, y] = position;
-	// constructor side increment to avoid middle slot if position is on the right side
-	const sideIncrement = x >= (totalWidthPositions / 2) ? 1 : 0
-	const xWidth = (x + sideIncrement) * slotWidth;
-	const boardHeightAtX = calculateYInLinearEquation(xWidth, start, end);
-	const slotHeight = boardHeightAtX / totalHeightPositions;
-
-	return [(slotWidth / 2) + xWidth, y * slotHeight];
-};
-
 export default {
 	components: { ActionsBoard, Scale, Weight },
 	data: () => ({
-		/** @property {BoardConfig | null} */
-		board: null,
+		/** @property {ScaleConfig | null} */
+		scaleConfig: null,
 		/** @property {number} */
 		playgroundHeight: 0,
 	}),
@@ -96,19 +70,19 @@ export default {
 		 */
 		weightList(state) {
 			return state.list.map(weight => {
-				const [x, y] = this.calculateWeightPosition(weight);
+				const [x] = weight.position;
+				const isOnTheLeft = x < GAME_CONFIGURATION.width / 2;
 				return {
 					...weight,
 					style: {
-						left: `calc(${x}px + ${this.board?.radAngle} * 4rem)`,
-						top: `calc(${y}px + ${this.board?.radAngle} * 4rem)`,
-						transform: `rotate(${this.board?.radAngle}rad)`
+						'--x': weight.position[0] + (isOnTheLeft ? 0 : 1),
+						'--y': weight.position[1],
 					},
 				};
 			});
 		},
 		bending(state, getters) {
-			return getters.bending;
+			return getters.bending * 100 / GAME_CONFIGURATION.maxBending;
 		},
 		gameStatus(state) {
 			return state.status;
@@ -122,13 +96,36 @@ export default {
 				[GAME_STATUS.rightWon]: BOARD_ACTION.stop,
 			})[state.status];
 		},
+		styleVariables() {
+			if (!this.scaleConfig) return;
+
+			const { angleRad = 0, start = [0, 0], end = [0, 0] } = this.scaleConfig;
+			const boardYStart = this.$refs.board?.getBoundingClientRect().y || 0;
+			const [yEndLeft, yEndRight] = this.scaleConfig.angleRad > 0
+				? [start[1], end[1]]
+				: [end[1], start[1]];
+
+			return {
+				'--board-width-slots': GAME_CONFIGURATION.width + 1, // +1 for an empty mid
+				'--board-height-slots': GAME_CONFIGURATION.height,
+				'--board-top-left-x': start[0],
+				'--board-top-left-y': boardYStart,
+				'--board-top-right-x': end[0],
+				'--board-top-right-y': boardYStart,
+				'--board-bottom-left-x': start[0],
+				'--board-bottom-left-y': yEndLeft,
+				'--board-bottom-right-x': end[0],
+				'--board-bottom-right-y': yEndRight,
+				'--scale-angle-rad': angleRad,
+			};
+		},
 	}),
 	mounted() {
-		window.addEventListener('keydown', this.onKeyPress)
+		window.addEventListener('keydown', this.onKeyPress);
 		this.playgroundHeight = this.$refs.board?.getBoundingClientRect().height || null;
 	},
 	unmounted() {
-		window.removeEventListener('keydown', this.onKeyPress)
+		window.removeEventListener('keydown', this.onKeyPress);
 	},
 	methods: {
 		...mapActions({
@@ -162,7 +159,10 @@ export default {
 				' ': this.onToggle,
 			}[event.key];
 
-			action?.();
+			if (action) {
+				event.preventDefault();
+				action();
+			}
 		},
 		/**
 		 * @param {'play' | 'pause' | 'stop' }action
@@ -176,29 +176,30 @@ export default {
 
 			actionCallback?.();
 		},
-		/**
-		 * @param   {Weight} weight
-		 * @returns {Position}
-		 */
-		calculateWeightPosition(weight) {
-			if (!this.board) return [-9000, -9000];
-
-			return calculatePositionWithinPlayground(
-				weight.position,
-				{
-					// TODO define Vue component data properties properly (`this.board` type is not identified)
-					...(/** @type BoardConfig */this.board),
-					totalHeightPositions: GAME_CONFIGURATION.height,
-					totalWidthPositions: GAME_CONFIGURATION.width,
-					playgroundHeight: this.playgroundHeight,
-				},
-			);
-		},
 	},
 };
 </script>
 
 <style scoped lang="scss">
+@function abs($v) {
+	@return max(var($v), calc(var($v) * -1));
+}
+
+@function sign($v) {
+	@return calc(var($v) / abs($v));
+}
+
+@function slotSize($slots, $min, $max) {
+	@return calc((var($max) - var($min)) / var($slots));
+}
+
+@function yInLinearEquation($x, $x1, $y1, $x2, $y2) {
+	@return calc(
+		(var($y2) - var($y1)) / (var($x2) - var($x1)) * var($x)
+		+ (var($x2) * var($y1) - var($x1) * var($y2)) / (var($x2) - var($x1))
+	);
+}
+
 .playground {
 	&__wrapper {
 		height: 100%;
@@ -222,13 +223,48 @@ export default {
 	}
 
 	&__board {
+		--x: 0;
+		--y: 0;
+		--scale-angle-rad: 0;
+		--board-width-slots: 0;
+		--board-height-slots: 0;
+		--board-top-left-x: 0;
+		--board-top-left-y: 0;
+		--board-top-right-x: 0;
+		--board-top-right-y: 0;
+		--board-bottom-left-x: 0;
+		--board-bottom-left-y: 0;
+		--board-bottom-right-x: 0;
+		--board-bottom-right-y: 0;
+
+		--board-width: calc(var(--board-top-right-x) - var(--board-top-left-x));
+
 		height: 100%;
 		width: 100%;
+		position: relative;
 	}
 
 	&__weight {
 		position: absolute;
 		opacity: 0.9;
+		transform: rotate(calc(var(--scale-angle-rad) * 1rad));
+
+		--width-slot: calc(var(--board-width) / (var(--board-width-slots) + 2));
+		--weight-x-px: calc(var(--x) * var(--width-slot) + var(--width-slot));
+		left: calc(var(--weight-x-px) * 1px);
+
+		--board-height-at-weight-x-px: #{yInLinearEquation(
+			--weight-x-px,
+			--board-bottom-left-x,
+			--board-bottom-left-y,
+			--board-bottom-right-x,
+			--board-bottom-right-y,
+		)};
+
+		--board-height: calc(var(--board-height-at-weight-x-px) - var(--board-top-left-y));
+		--height-slot: calc(var(--board-height) / var(--board-height-slots));
+		--weight-y-px: calc(var(--y) * var(--height-slot) + var(--height-slot) - 14);
+		top: calc(var(--weight-y-px) * 1px);
 	}
 }
 </style>

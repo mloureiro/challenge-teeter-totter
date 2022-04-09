@@ -8,14 +8,15 @@
 <script setup>
 import {
 	computed,
-	defineEmits,
 	onMounted,
 	onUnmounted,
 	ref,
+	watch,
+	nextTick,
 } from 'vue';
 import { isBetween } from "../utils";
 
-const emit = defineEmits(['board']);
+const emit = defineEmits(['scale']);
 
 const props = defineProps({
 	bending: {
@@ -38,18 +39,32 @@ const updateMaxBoardAngle = () => {
 		return;
 	}
 
-	const { top, right, bottom, left, height, width } = board.value.getBoundingClientRect();
+	const { top, height, width } = board.value.getBoundingClientRect();
 	const { height: parentHeight } = board.value.parentElement.getBoundingClientRect();
 
 	const heightFromGround = parentHeight - Math.round(top + (height / 2));
-	maxRadAngle.value = Math.tan(heightFromGround / (width / 2));
+	maxRadAngle.value = Math.tan(heightFromGround / (width / 3));
+};
 
-	emit('board', {
+const emitScaleChange = async () => {
+	// TODO remove setTimeout
+	// for some reason nextTick() doesn't affect DOM iteration
+	// although I'm already late, so I'll figure this out later
+	await nextTick();
+	await new Promise(r => setTimeout(r, 100));
+
+	const { top, right, bottom, left, height, width } = board.value.getBoundingClientRect();
+	emit('scale', {
+		height,
+		width,
 		start: [left, top],
 		end: [right, bottom],
-		radAngle: currentRadAngle.value,
+		angleRad: currentRadAngle.value,
 	});
 };
+
+watch(currentRadAngle, emitScaleChange);
+watch(maxRadAngle, emitScaleChange);
 
 onMounted(() => {
 	window.addEventListener('resize', updateMaxBoardAngle);
