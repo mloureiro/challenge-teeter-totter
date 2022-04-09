@@ -1,5 +1,10 @@
 import { createStore } from 'vuex';
-import { randomItem, randomNumber } from './utils';
+import {
+	calculateArrayDistribution,
+	calculatePercentage,
+	randomItem,
+	randomNumber,
+} from './utils';
 
 /**
  * Main type definitions
@@ -59,11 +64,13 @@ const SHAPES = {
  * @type {Object.<string, number>}
  */
 export const GAME_CONFIGURATION = {
-	height: 20,
-	width: 10,
-	minWeight: 1,
-	maxWeight: 10,
-	maxBending: 30,
+	height: 20, // m
+	width: 10,  // m
+	minWeight: 1,  // kg
+	maxWeight: 10, // kg
+	weightDistributionArea: 2,   // m
+	weightDifferencePerMeter: 10,// kg = 2 * 10 kgm
+	maxBending: 30, // %
 	tickTime: 800,
 };
 
@@ -153,9 +160,9 @@ const createWeight = (player, props = {}) => {
 			GAME_CONFIGURATION.minWeight,
 			GAME_CONFIGURATION.maxWeight,
 		),
-		...props,
 		position: [randomNumber(xStart, xEnd), yStart],
 		player,
+		...props,
 	};
 
 	if (state.player === 'b') throw Error();
@@ -285,9 +292,43 @@ export const store = createStore({
 		 * Calculate board bending
 		 * @param   {State} state
 		 * @returns {number}
-		 * @TODO
+		 *
+		 * TODO check the correct way to calculate the bending
+		 * The way I've implemented
+		 * - bending is a percentual number from -100% to 100%
+		 * - the weights further from the center has an higher effect (bend more)
+		 * - to calculate the difference for each area, I'm using the weight
+		 *   distribution requirement (10kg * 2m)
 		 */
-		bending(state) { return 0; },
+		bending(state) {
+			const weights = Array(GAME_CONFIGURATION.width).fill(0);
+			state.list
+				.filter(w => w.position[1] === GAME_CONFIGURATION.height - 1)
+				.forEach(w => weights[w.position[0]] += w.value);
+
+			const rightWeights = weights.splice(GAME_CONFIGURATION.width / 2);
+			const leftWeights = weights;
+
+			const leftDistribution = calculateArrayDistribution(
+				leftWeights.reverse(), // reversing so that it counts from center (like the right side)
+				GAME_CONFIGURATION.weightDistributionArea
+			);
+
+			const rightDistribution = calculateArrayDistribution(
+				rightWeights,
+				GAME_CONFIGURATION.weightDistributionArea
+			);
+
+			const totalAreas = leftDistribution.length;
+			const impactVariationPerArea = 0.50 / totalAreas;
+			let bending = 0;
+			for (let i = 0; i < totalAreas; i++) {
+				const impactMultiplier = 0.5 + (i + 1) * impactVariationPerArea;
+				bending += (rightDistribution[i] - leftDistribution[i]) * impactMultiplier;
+			}
+
+			return Math.sign(bending) * calculatePercentage(Math.abs(bending), 0, GAME_CONFIGURATION.maxBending);
+		},
 	},
 	/**
 	 * @type {Object.<Mutations, function(State): void>} mutations

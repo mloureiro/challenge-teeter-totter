@@ -82,7 +82,7 @@ export default {
 			});
 		},
 		bending(state, getters) {
-			return getters.bending * 100 / GAME_CONFIGURATION.maxBending;
+			return getters.bending;
 		},
 		gameStatus(state) {
 			return state.status;
