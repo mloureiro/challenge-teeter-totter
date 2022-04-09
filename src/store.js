@@ -74,7 +74,7 @@ export const GAME_CONFIGURATION = {
 	scaleSensibility: 1,
 	// distance to center impact increases the effect that weights
 	// closer to the edge have,
-	distanceToCenterImpact: 0.3,
+	distanceToCenterImpact: 1.5,
 	maxBending: 30, // %
 	initialTickTime: 550,
 	tickTimeIncrement: 100,
@@ -354,7 +354,7 @@ export const store = createStore({
 			let bending = 0;
 			for (let i = 0; i < totalAreas; i++) {
 				const impactMultiplier = GAME_CONFIGURATION.scaleSensibility
-					+ (totalAreas - i) * GAME_CONFIGURATION.distanceToCenterImpact;
+					+ i * GAME_CONFIGURATION.distanceToCenterImpact;
 				bending += (rightDistribution[i] - leftDistribution[i]) * impactMultiplier;
 			}
 
