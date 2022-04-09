@@ -80,7 +80,10 @@ export default {
 		 * @returns {Array.<PositionedWeight>}
 		 */
 		weightList(state) {
-			return state.list.map(weight => {
+			const list = state.active
+				? [...state.list, state.active]
+				: state.list;
+			return list.map(weight => {
 				const [x] = weight.position;
 				const isOnTheLeft = x < GAME_CONFIGURATION.width / 2;
 				return {

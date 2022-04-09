@@ -360,11 +360,12 @@ export const store = createStore({
 	 */
 	mutations: {
 		[MUTATIONS.nextTurn]: state => {
+			if (state.active)
+				state.list = [...state.list, state.active];
 			state.player = !state.player || state.player === PLAYERS.human
 				? PLAYERS.machine
 				: PLAYERS.human;
 			state.active = createWeight(state.player);
-			state.list = [...state.list, state.active];
 		},
 		[MUTATIONS.move]: (state, newPosition) => {
 			if (state.active)
