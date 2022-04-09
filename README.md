@@ -38,3 +38,22 @@ Ok, without further ado, let's dive into the actual remarks:
 - along the way, I've questioned my initial idea, from functionality to implementation (although too late to rebuild it)
   - having the same amount of height ticks regardless of the inclination of the scale seemed a good idea in the beginning, although if we think about Tetris the ticks are related with the available space 
   - I've calculated the position of each weight based on the available space by calculating the 4 corners of the board (considering the scale inclination), this was all manual, I do think that this could be achieved with ease by setting all weights in the center of the board, then using `transform: rotate()` to fix the alignment
+
+
+### How to run
+
+The game can be found at [loureiro.me/challenge-teeter-totter](https://www.loureiro.me/challenge-teeter-totter/).
+
+Although to run it locally at [localhost:3000](http://localhost:3000) in dev mode:
+
+```shell
+$ npm install
+$ npm run dev
+```
+
+It is also possible to run production code locally at [localhost:4173](http://localhost:4173/challenge-teeter-totter/) by running:
+
+```shell
+$ npm ci
+$ npm run preview
+```
