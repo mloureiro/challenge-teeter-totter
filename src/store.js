@@ -13,8 +13,7 @@ import {
      | 'initial'
      | 'playing'
      | 'paused'
-     | 'player-won'
-     | 'player-lost'
+     | 'game-over'
    } GameStatus
  */
 
@@ -91,7 +90,7 @@ export const STATUS = {
 	playing: 'playing',
 	paused: 'paused',
 	playerWon: 'player-won',
-	gameOver: 'player-lost',
+	gameOver: 'game-over',
 };
 
 /**
@@ -102,8 +101,7 @@ export const STATUS = {
      | 'create-weight'
      | 'move-active-weight'
      | 'play'
-     | 'player-lost'
-     | 'player-won'
+     | 'game-over'
      | 'pause'
      | 'reset'
    } Mutations
@@ -115,8 +113,7 @@ export const MUTATIONS = {
 	move: 'move-active-weight',
 	reset: 'reset',
 	play: 'play',
-	playerLost: 'player-lost',
-	playerWon: 'player-won',
+	gameOver: 'game-over',
 	pause: 'pause',
 };
 
@@ -381,7 +378,7 @@ export const store = createStore({
 				state.active.position = newPosition;
 		},
 		[MUTATIONS.play]: state => state.status = STATUS.playing,
-		[MUTATIONS.playerLost]: state => state.status = STATUS.gameOver,
+		[MUTATIONS.gameOver]: state => state.status = STATUS.gameOver,
 		[MUTATIONS.playerWon]: state => state.status = STATUS.playerWon,
 		[MUTATIONS.pause]: state => state.status = STATUS.paused,
 		[MUTATIONS.reset]: state =>
@@ -447,7 +444,7 @@ export const store = createStore({
 			const hasGameFinished = Math.abs(getters.bending) > GAME_CONFIGURATION.maxBending;
 			if (hasGameFinished) {
 				ticker.stop();
-				return commit(state.player === PLAYERS.human ? MUTATIONS.playerWon : MUTATIONS.playerLost)
+				return commit(MUTATIONS.gameOver);
 			}
 
 			commit(MUTATIONS.nextTurn);

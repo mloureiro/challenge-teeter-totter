@@ -1,8 +1,8 @@
 <template>
 	<div class="playground__wrapper">
 		<game-over-modal
-			v-if="gameOverStatus"
-			:status="gameOverStatus"
+			v-if="isGameOver"
+			status="lost"
 			@close="onReset"
 		/>
 		<actions-board
@@ -114,11 +114,8 @@ export default {
 				[GAME_STATUS.gameOver]: BOARD_ACTION.stop,
 			})[state.status];
 		},
-		gameOverStatus(state) {
-			return ({
-				[GAME_STATUS.gameOver]: GAME_OVER_STATUS.lost,
-				[GAME_STATUS.playerWon]: GAME_OVER_STATUS.won,
-			})[state.status] || null;
+		isGameOver(state) {
+			return state.status === GAME_STATUS.gameOver;
 		},
 		styleVariables() {
 			if (!this.scaleConfig) return;
