@@ -92,9 +92,6 @@ export default {
 			});
 		},
 	},
-	mounted() {
-
-	},
 };
 </script>
 
@@ -147,7 +144,7 @@ export default {
 		transform: rotate(calc(var(--scale-angle-rad) * 1rad));
 
 		--width-slot: calc(var(--board-width) / (var(--board-width-slots) + 2));
-		--weight-x-px: calc(var(--x) * var(--width-slot) + var(--width-slot));
+		--weight-x-px: calc(var(--x) * var(--width-slot) + var(--width-slot) + var(--width-slot) / 2);
 		left: calc(var(--weight-x-px) * 1px);
 
 		--board-height-at-weight-x-px: #{yInLinearEquation(
@@ -164,5 +161,4 @@ export default {
 		top: calc(var(--weight-y-px) * 1px);
 	}
 }
-
 </style>
