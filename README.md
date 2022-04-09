@@ -10,11 +10,11 @@ This was an interesting challenge, never done anything like it. I was thinking t
 Ok, without further ado, let's dive into the actual remarks:
 
 **Game:**
+- the game configuration is hardcoded but easily changed in [`GAME_CONFIGURATION` object defined in `store.js`](./src/store.js) (take a look to see what's possible)
 - shortcuts: 
   - `ESC`: resets the game
   - `SPACE`: toggles between play and pause
   - `DOWN`: to move 1 position down (only on your turn)
-- the game configuration is hardcoded but easily changed in [`GAME_CONFIGURATION` object defined in `store.js`](./src/store.js)
 - I've decided to keep the height ticks the same, regardless of available height, so it always does X (defined in the `GAME_CONFIGURATION.height`) ticks before reaching the board
 - it is responsive (although it is not (yet) ready for touch events), and it uses Javascript to calculate the max angle the scale board can bend, since the height of the scale doesn't change, only the width which affects the angle it has till it hits the floor
 

@@ -1,7 +1,6 @@
 import { createStore } from 'vuex';
 import {
 	calculateArrayDistribution,
-	calculatePercentage,
 	randomItem,
 	randomNumber,
 } from './utils';
@@ -70,6 +69,12 @@ export const GAME_CONFIGURATION = {
 	maxWeight: 10, // kg
 	weightDistributionArea: 2,   // m
 	weightDifferencePerMeter: 10,// kg = 2 * 10 kgm
+	// scale sensibility affects the impact each weight causes, for
+	// instance 10kg with 0.5 sensibility will only count as 5kg
+	scaleSensibility: 1,
+	// distance to center impact increases the effect that weights
+	// closer to the edge have,
+	distanceToCenterImpact: 0.3,
 	maxBending: 30, // %
 	initialTickTime: 550,
 	tickTimeIncrement: 100,
@@ -346,14 +351,14 @@ export const store = createStore({
 			);
 
 			const totalAreas = leftDistribution.length;
-			const impactVariationPerArea = 0.50 / totalAreas;
 			let bending = 0;
 			for (let i = 0; i < totalAreas; i++) {
-				const impactMultiplier = 0.5 + (i + 1) * impactVariationPerArea;
+				const impactMultiplier = GAME_CONFIGURATION.scaleSensibility
+					+ (totalAreas - i) * GAME_CONFIGURATION.distanceToCenterImpact;
 				bending += (rightDistribution[i] - leftDistribution[i]) * impactMultiplier;
 			}
 
-			return Math.sign(bending) * calculatePercentage(Math.abs(bending), 0, GAME_CONFIGURATION.maxBending);
+			return bending;
 		},
 	},
 	/**

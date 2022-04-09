@@ -37,6 +37,7 @@ import GameOverModal, { STATUS as GAME_OVER_STATUS } from './components/game-ove
 import Scale from './components/scale.vue';
 import Weight from './components/weight.vue';
 import { GAME_CONFIGURATION, ACTIONS, STATUS as GAME_STATUS } from './store';
+import { calculatePercentage } from './utils';
 
 /**
  * @typedef {import('./store').State} State
@@ -96,7 +97,7 @@ export default {
 			});
 		},
 		bending(state, getters) {
-			return getters.bending;
+			return Math.sign(getters.bending) * calculatePercentage(Math.abs(getters.bending), 0, GAME_CONFIGURATION.maxBending);
 		},
 		gameStatus(state) {
 			return state.status;
